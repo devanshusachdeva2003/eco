@@ -28,7 +28,8 @@ export default function LoginPage() {
       body: JSON.stringify({ email, password }),
     });
 
-    const data = await res.json();
+    const text = await res.text();
+    const data = text ? JSON.parse(text) : {};
 
     if (!res.ok) {
       setError(data?.message || "Login failed");
@@ -41,8 +42,8 @@ export default function LoginPage() {
     localStorage.setItem("user", JSON.stringify(data.user));
 
     router.push("/");
-  } catch (err: any) {
-    setError(err?.message || "An unexpected error occurred");
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "An unexpected error occurred");
   } finally {
     setLoading(false);
   }
@@ -95,7 +96,7 @@ export default function LoginPage() {
         )}
 
         <p className="text-center text-sm text-white/50 mt-6">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
          
           <Link href="/register" className="text-white underline">
   Create account

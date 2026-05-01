@@ -1,4 +1,9 @@
 import { MongoClient } from "mongodb";
+import dns from "node:dns";
+
+// Fix for Windows DNS resolution issues with MongoDB SRV records
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+console.log("DNS Servers set to:", dns.getServers());
 
 const uri = process.env.Mongodb_Url;
 

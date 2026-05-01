@@ -24,7 +24,8 @@ export default function RegisterPage() {
     body: JSON.stringify({ name, email, password, role, adminCode }),
   });
 
-  const data = await res.json();
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : {};
 
   if (!res.ok) {
     alert(data.message);
@@ -83,7 +84,10 @@ export default function RegisterPage() {
             <label className="text-sm text-white/70">Role</label>
             <select
               value={role}
-              onChange={(e) => setRole(e.target.value as any)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setRole(value === "admin" ? "admin" : "user");
+              }}
               className="mt-2 w-full rounded-full bg-transparent border border-white/20 px-5 py-3 outline-none"
             >
               <option value="user">User</option>
