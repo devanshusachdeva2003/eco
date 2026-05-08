@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useCart } from "../components/CartContext";
 import { products as initialProducts } from "../data/products";
 
@@ -70,6 +71,21 @@ export default function CatalogPage() {
   const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
   const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
   const [qty, setQty] = useState(1);
+  const [query, setQuery] = useState("");
+  const [filterColor, setFilterColor] = useState<string | "">("");
+
+  const colors = useMemo(() => {
+    const all = initialProducts.flatMap((p) => p.colors || []);
+    return Array.from(new Set(all));
+  }, []);
+
+  const filteredProducts = useMemo(() => {
+    return initialProducts.filter((p) => {
+      const matchesQuery = p.name.toLowerCase().includes(query.toLowerCase());
+      const matchesColor = filterColor ? p.colors.includes(filterColor) : true;
+      return matchesQuery && matchesColor;
+    });
+  }, [query, filterColor]);
 
   function openProduct(p: any) {
     setSelected(p);
@@ -91,12 +107,32 @@ export default function CatalogPage() {
     <div>
      <section className="bg-gray-200 px-14 pt-20 pb-12">
       <div className="grid grid-cols-2">
-        <h1 className="text-6xl font-light">Catalog</h1>
+        <div>
+          <h1 className="text-6xl font-light">Catalog</h1>
+        </div>
 
-        <h1 className="text-6xl font-light">8 Products</h1>
+        <div className="flex items-center justify-end gap-4">
+          <div className="flex items-center gap-2 text-sm">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search products"
+              className="px-3 py-2 border rounded w-56"
+            />
+
+            <select value={filterColor} onChange={(e) => setFilterColor(e.target.value as any)} className="px-3 py-2 border rounded text-sm">
+              <option value="">All Colors</option>
+              {colors.map((c) => (
+                <option key={c} value={c}>{c.replace('bg-','')}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="text-sm font-light">{filteredProducts.length} Products</div>
+        </div>
       </div>
 
-      <div className="mt-28 flex items-center gap-2 text-xs">
+      <div className="mt-8 flex items-center gap-2 text-xs">
         <span>Sort by:</span>
         <button className="flex items-center gap-2 font-bold">
           Featured
@@ -106,13 +142,15 @@ export default function CatalogPage() {
     </section>
               <div className="bg-gray-100 min-h-screen p-10">
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1">
-             {initialProducts.map((item) => (
+             {filteredProducts.map((item, idx) => (
                <div key={item.id} onClick={() => openProduct(item)} className="bg-white group overflow-hidden cursor-pointer">
                  <div className="relative w-full h-[350px] overflow-hidden">
                    <Image
                      src={item.img}
                      alt={item.name}
                      fill
+                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                     loading={idx === 0 ? "eager" : "lazy"}
                      className="object-cover transition duration-500 group-hover:scale-105"
                    />
                  </div>
@@ -122,8 +160,8 @@ export default function CatalogPage() {
                      THE PROLOGUE
                    </p>
      
-                   <div className="flex justify-between text-xs font-semibold">
-                     <p>{item.name}</p>
+                   <div className="flex justify-between text-xs font-semibold items-center">
+                     <Link href={`/catalog/${item.id}`} className="hover:underline">{item.name}</Link>
                      <p>{item.price}</p>
                    </div>
      
@@ -148,7 +186,7 @@ export default function CatalogPage() {
             <div className="relative z-10 w-[90%] max-w-3xl bg-white rounded shadow-lg overflow-hidden">
               <div className="grid grid-cols-1 md:grid-cols-2">
                 <div className="relative h-96">
-                  <Image src={selected.img} alt={selected.name} fill className="object-cover" />
+                  <Image src={selected.img} alt={selected.name} fill sizes="100vw" loading="eager" className="object-cover" />
                 </div>
 
                 <div className="p-6">

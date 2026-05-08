@@ -29,4 +29,4 @@ if (global._mongoClientPromise) {
   global._mongoClientPromise = cachedPromise;
 }
 
-export default cachedPromise;
+export default cachedPromise as Promise<MongoClient>;
